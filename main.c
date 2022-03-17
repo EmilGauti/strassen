@@ -37,12 +37,13 @@ int main(int argc, char *argv[]){
     printf("Strassen: Nthreads: %d, N: %d, Time: %lf\n", nThreads, N, end);
 /*
     double **ref;
-   int j;
+    int j;
     start = get_wall_seconds();
     ref=matrix_mult(G1,G2,N);
     end = get_wall_seconds()-start;
     printf("Normal: N: %d, Time: %lf\n", N,end);
     //printf("Reference:\n");
+    
     double eps=0.01;
     for(i=0;i<N;i++){
         for(j=0;j<N;j++){

@@ -4,7 +4,7 @@
 #include "funcs.h"
 #include <omp.h>
 double **matrix_mult(double **G1, double **G2, int N){
-    int i,j,k;
+    unsigned int i,j,k;
     double sum;
     double ** prod = malloc(N*sizeof(double *));
     for(i=0; i< N; i++){
@@ -34,7 +34,7 @@ void split(mSplit_t *subMat, double** G, int N){
     */
     //subMat->N=N;
     //subMat->mat=G;
-    int i,j;
+    unsigned int i,j;
     double ** nw = malloc(N/2*sizeof(double *));
     double ** ne = malloc(N/2*sizeof(double *));
     double ** sw = malloc(N/2*sizeof(double *));
@@ -67,7 +67,7 @@ double randfrom(double min, double max)
 }
 void rand_init(int N, double **G,double min, double max){
     srand(time(NULL));
-    int i,j;
+    unsigned int i,j;
     for(i=0;i<N;i++){
         for(j=0;j<N;j++){
             //if(i==j)
@@ -76,7 +76,7 @@ void rand_init(int N, double **G,double min, double max){
     }
 }
 double** mat_add(double **G1, double **G2, int N){
-    int i,j;
+    unsigned int i,j;
     double ** sum = malloc(N*sizeof(double *));
     for(i=0; i< N; i++){
         sum[i] = malloc(N*sizeof(double));
@@ -89,7 +89,7 @@ double** mat_add(double **G1, double **G2, int N){
     return sum;
 }
 double** mat_sub(double **G1, double **G2, int N){
-    int i,j;
+    unsigned int i,j;
     double ** sum = malloc(N*sizeof(double *));
     for(i=0; i< N; i++){
         sum[i] = malloc(N*sizeof(double));
@@ -102,7 +102,7 @@ double** mat_sub(double **G1, double **G2, int N){
     return sum;
 }
 double** stackP(double** p1, double** p2, double** p3, double** p4, double** p5, double** p6, double** p7, int N){
-    int i,j;
+    unsigned int i,j;
     double ** c = malloc(N*sizeof(double *));
     for(i=0; i< N; i++){
         c[i] = malloc(N*sizeof(double));
@@ -153,7 +153,7 @@ double** stackP(double** p1, double** p2, double** p3, double** p4, double** p5,
     return c;
 }
 void free_p(double** p1, double** p2, double** p3, double** p4, double** p5, double** p6, double** p7, int N){
-    int i;
+    unsigned int i;
     for(i=0;i<N;i++){
         free(p1[i]);
         free(p2[i]);
@@ -172,7 +172,7 @@ void free_p(double** p1, double** p2, double** p3, double** p4, double** p5, dou
     free(p7);
 }
 void free_s(mSplit_t *s, int N){
-    int i;
+    unsigned int i;
     for(i=0; i< N/2; i++){
         //printf("free_s: i=%d , N=%d\n",i,N/2);
         free(s->nw[i]);
@@ -188,7 +188,7 @@ void free_s(mSplit_t *s, int N){
     free(s);
 }
 void free_mat(double **G, int N){
-    int i;
+    unsigned int i;
     for(i=0; i<N;i++){
         //printf("free_mat: i=%d , N=%d\n",i,N);
         free(G[i]);
@@ -246,11 +246,6 @@ double **strassen(double** G1, double** G2, int N, int nThreads){
     //               e f 
     //               g h
     double **p1_2, **p2_1, **p3_1, **p4_2, **p5_1, **p5_2, **p6_1, **p6_2, **p7_1, **p7_2;
-    
-    
-    
-    
-    
     
     int nr_threads_send=nThreads/7;
     int N_2=N/2; 

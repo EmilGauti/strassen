@@ -14,7 +14,7 @@ void rand_init(int N, double **G,double min, double max);
 double** mat_add(double **G1, double **G2, int N);
 double** mat_sub(double **G1, double **G2, int N);
 double** stackP(double** p1, double** p2, double** p3, double** p4, double** p5, double** p6, double** p7, int N);
-double **strassen(double** G1, double** G2, int N, int nThreads);
+double **strassen(double** G1, double** G2, int N);
 
 void free_p(double** p1, double** p2, double** p3, double** p4, double** p5, double** p6, double** p7, int N);
 void free_s(mSplit_t *s, int N);

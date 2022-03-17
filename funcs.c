@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include "funcs.h"
-#include <omp.h>
 double **matrix_mult(double **G1, double **G2, int N){
     unsigned int i,j,k;
     double sum;
@@ -211,7 +210,7 @@ void free_sub_p(double **p1_2, double **p2_1, double **p3_1, double **p4_2, doub
 
 }
 
-double **strassen(double** G1, double** G2, int N, int nThreads){
+double **strassen(double** G1, double** G2, int N){
 
     /*
     if(N==1){
@@ -224,7 +223,7 @@ double **strassen(double** G1, double** G2, int N, int nThreads){
         return sum;
     }
     */
-    if(N<=64){
+    if(N<=1){
         //N=64 is optimal
         //more testing required
         //printf("nThreads=%d\n",nThreads);
@@ -246,59 +245,32 @@ double **strassen(double** G1, double** G2, int N, int nThreads){
     //               e f 
     //               g h
     double **p1_2, **p2_1, **p3_1, **p4_2, **p5_1, **p5_2, **p6_1, **p6_2, **p7_1, **p7_2;
+    int N_2=N/2;     
     
-    int nr_threads_send=nThreads/7;
-    int N_2=N/2; 
-    if(nThreads<=0){
-        nThreads=1;
-    }
-    #pragma omp parallel num_threads(nThreads)
-    {
-        #pragma omp single nowait
-        {
-            #pragma omp task
-            {
-                p1_2=mat_sub(s2->ne,s2->se,N_2);
-		        p1 = strassen(s1->nw,p1_2,N_2,nr_threads_send);//(a, f - h); x
-            }
-            #pragma omp task
-            {
-                p2_1=mat_add(s1->nw,s1->ne,N_2);
-                p2 = strassen(p2_1,s2->se,N_2,nr_threads_send);//(a + b, h); x
-            }
-            #pragma omp task
-            {
-                p3_1=mat_add(s1->sw,s1->se,N_2);
-                p3 = strassen(p3_1,s2->nw,N_2,nr_threads_send);//(c + d, e); x
-            }
-            #pragma omp task
-            {
-                p4_2=mat_sub(s2->sw,s2->nw,N_2);
-                p4 = strassen(s1->se,p4_2,N_2,nr_threads_send);//(d, g - e); x
-            }
-            #pragma omp task
-            {
-                p5_1=mat_add(s1->nw,s1->se,N_2);
-                p5_2=mat_add(s2->nw,s2->se,N_2);
-                p5 = strassen(p5_1,p5_2,N_2,nr_threads_send);//(a + d, e + h); x x
-            }
-            #pragma omp task
-            {
-                p6_1=mat_sub(s1->ne,s1->se,N_2);
-                p6_2=mat_add(s2->sw,s2->se,N_2);
-                p6 = strassen(p6_1,p6_2,N_2,nr_threads_send);//(b - d, g + h); x x
-            }
-            #pragma omp task
-            {
-                p7_1=mat_sub(s1->nw,s1->sw,N_2);
-                p7_2=mat_add(s2->nw,s2->ne,N_2);
-                p7 = strassen(p7_1,p7_2,N_2,nr_threads_send);//(a - c, e + f); x x
-            }
-            
-        }
-        
+    p1_2=mat_sub(s2->ne,s2->se,N_2);
+    p1 = strassen(s1->nw,p1_2,N_2);//(a, f - h); x
 
-    }
+    p2_1=mat_add(s1->nw,s1->ne,N_2);
+    p2 = strassen(p2_1,s2->se,N_2);//(a + b, h); x
+
+    p3_1=mat_add(s1->sw,s1->se,N_2);
+    p3 = strassen(p3_1,s2->nw,N_2);//(c + d, e); x
+
+    p4_2=mat_sub(s2->sw,s2->nw,N_2);
+    p4 = strassen(s1->se,p4_2,N_2);//(d, g - e); x
+
+    p5_1=mat_add(s1->nw,s1->se,N_2);
+    p5_2=mat_add(s2->nw,s2->se,N_2);
+    p5 = strassen(p5_1,p5_2,N_2);//(a + d, e + h); x x
+
+    p6_1=mat_sub(s1->ne,s1->se,N_2);
+    p6_2=mat_add(s2->sw,s2->se,N_2);
+    p6 = strassen(p6_1,p6_2,N_2);//(b - d, g + h); x x
+
+    p7_1=mat_sub(s1->nw,s1->sw,N_2);
+    p7_2=mat_add(s2->nw,s2->ne,N_2);
+    p7 = strassen(p7_1,p7_2,N_2);//(a - c, e + f); x x
+          
 
     
     free_sub_p(p1_2, p2_1, p3_1, p4_2, p5_1, p5_2, p6_1, p6_2, p7_1, p7_2,N_2);

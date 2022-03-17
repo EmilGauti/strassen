@@ -1,0 +1,5 @@
+Strassen: Nthreads: 1, N: 512, Time: 0.180772
+Strassen: Nthreads: 1, N: 1024, Time: 1.271491
+Strassen: Nthreads: 1, N: 2048, Time: 8.881024
+Strassen: Nthreads: 1, N: 4096, Time: 62.724203
+Strassen: Nthreads: 1, N: 8192, Time: 435.424253

@@ -210,9 +210,8 @@ void free_sub_p(double **p1_2, double **p2_1, double **p3_1, double **p4_2, doub
     free_mat(p7_2,N);
 
 }
-
-double **strassen(double** G1, double** G2, int N, int nThreads){
-
+int critical_depth=1;
+double **strassen(double** G1, double** G2, int N, int nThreads, int depth){
     /*
     if(N==1){
         //This is never used if the below is used
@@ -254,54 +253,79 @@ double **strassen(double** G1, double** G2, int N, int nThreads){
     
     int nr_threads_send=nThreads/7;
     int N_2=N/2; 
-    if(nThreads<=0){
-        nThreads=1;
-    }
-    #pragma omp parallel num_threads(nThreads)
-    {
-        #pragma omp single nowait
-        {
-            #pragma omp task
-            {
-                p1_2=mat_sub(s2->ne,s2->se,N_2);
-		        p1 = strassen(s1->nw,p1_2,N_2,nr_threads_send);//(a, f - h); x
-            }
-            #pragma omp task
-            {
-                p2_1=mat_add(s1->nw,s1->ne,N_2);
-                p2 = strassen(p2_1,s2->se,N_2,nr_threads_send);//(a + b, h); x
-            }
-            #pragma omp task
-            {
-                p3_1=mat_add(s1->sw,s1->se,N_2);
-                p3 = strassen(p3_1,s2->nw,N_2,nr_threads_send);//(c + d, e); x
-            }
-            #pragma omp task
-            {
-                p4_2=mat_sub(s2->sw,s2->nw,N_2);
-                p4 = strassen(s1->se,p4_2,N_2,nr_threads_send);//(d, g - e); x
-            }
-            #pragma omp task
-            {
-                p5_1=mat_add(s1->nw,s1->se,N_2);
-                p5_2=mat_add(s2->nw,s2->se,N_2);
-                p5 = strassen(p5_1,p5_2,N_2,nr_threads_send);//(a + d, e + h); x x
-            }
-            #pragma omp task
-            {
-                p6_1=mat_sub(s1->ne,s1->se,N_2);
-                p6_2=mat_add(s2->sw,s2->se,N_2);
-                p6 = strassen(p6_1,p6_2,N_2,nr_threads_send);//(b - d, g + h); x x
-            }
-            #pragma omp task
-            {
-                p7_1=mat_sub(s1->nw,s1->sw,N_2);
-                p7_2=mat_add(s2->nw,s2->ne,N_2);
-                p7 = strassen(p7_1,p7_2,N_2,nr_threads_send);//(a - c, e + f); x x
-            }
-            
+    if(depth>=critical_depth){
+        if(nThreads<=0){
+            nThreads=1;
         }
-        
+        #pragma omp parallel num_threads(2)
+        {
+            #pragma omp single nowait
+            {
+                #pragma omp task
+                {
+                    p1_2=mat_sub(s2->ne,s2->se,N_2);
+                    p1 = strassen(s1->nw,p1_2,N_2,nr_threads_send,depth+1);//(a, f - h); x
+                }
+                #pragma omp task
+                {
+                    p2_1=mat_add(s1->nw,s1->ne,N_2);
+                    p2 = strassen(p2_1,s2->se,N_2,nr_threads_send,depth+1);//(a + b, h); x
+                }
+                #pragma omp task
+                {
+                    p3_1=mat_add(s1->sw,s1->se,N_2);
+                    p3 = strassen(p3_1,s2->nw,N_2,nr_threads_send,depth+1);//(c + d, e); x
+                }
+                #pragma omp task
+                {
+                    p4_2=mat_sub(s2->sw,s2->nw,N_2);
+                    p4 = strassen(s1->se,p4_2,N_2,nr_threads_send,depth+1);//(d, g - e); x
+                }
+                #pragma omp task
+                {
+                    p5_1=mat_add(s1->nw,s1->se,N_2);
+                    p5_2=mat_add(s2->nw,s2->se,N_2);
+                    p5 = strassen(p5_1,p5_2,N_2,nr_threads_send,depth+1);//(a + d, e + h); x x
+                }
+                #pragma omp task
+                {
+                    p6_1=mat_sub(s1->ne,s1->se,N_2);
+                    p6_2=mat_add(s2->sw,s2->se,N_2);
+                    p6 = strassen(p6_1,p6_2,N_2,nr_threads_send,depth+1);//(b - d, g + h); x x
+                }
+                #pragma omp task
+                {
+                    p7_1=mat_sub(s1->nw,s1->sw,N_2);
+                    p7_2=mat_add(s2->nw,s2->ne,N_2);
+                    p7 = strassen(p7_1,p7_2,N_2,nr_threads_send,depth+1);//(a - c, e + f); x x
+                }   
+            }
+        }
+    }
+    else{
+        p1_2=mat_sub(s2->ne,s2->se,N_2);
+        p1 = strassen(s1->nw,p1_2,N_2,nr_threads_send,depth+1);//(a, f - h); x
+    
+        p2_1=mat_add(s1->nw,s1->ne,N_2);
+        p2 = strassen(p2_1,s2->se,N_2,nr_threads_send,depth+1);//(a + b, h); x
+    
+        p3_1=mat_add(s1->sw,s1->se,N_2);
+        p3 = strassen(p3_1,s2->nw,N_2,nr_threads_send,depth+1);//(c + d, e); x
+    
+        p4_2=mat_sub(s2->sw,s2->nw,N_2);
+        p4 = strassen(s1->se,p4_2,N_2,nr_threads_send,depth+1);//(d, g - e); x
+    
+        p5_1=mat_add(s1->nw,s1->se,N_2);
+        p5_2=mat_add(s2->nw,s2->se,N_2);
+        p5 = strassen(p5_1,p5_2,N_2,nr_threads_send,depth+1);//(a + d, e + h); x x
+    
+        p6_1=mat_sub(s1->ne,s1->se,N_2);
+        p6_2=mat_add(s2->sw,s2->se,N_2);
+        p6 = strassen(p6_1,p6_2,N_2,nr_threads_send,depth+1);//(b - d, g + h); x x
+    
+        p7_1=mat_sub(s1->nw,s1->sw,N_2);
+        p7_2=mat_add(s2->nw,s2->ne,N_2);
+        p7 = strassen(p7_1,p7_2,N_2,nr_threads_send,depth+1);//(a - c, e + f); x x
 
     }
 

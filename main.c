@@ -26,13 +26,13 @@ int main(int argc, char *argv[]){
     for(i=0; i< N; i++){
         G1[i] = malloc(N*sizeof(double));
         G2[i] = malloc(N*sizeof(double));
-    }
+    } 
     rand_init(N,G1,min,max);
     rand_init(N,G2,min-3.0,max);
 
     /* start clock */
     start = get_wall_seconds();
-    G3 = strassen(G1,G2,N,nThreads);
+    G3 = strassen(G1,G2,N,nThreads,0);
     end = get_wall_seconds()-start;
     printf("Strassen: Nthreads: %d, N: %d, Time: %lf\n", nThreads, N, end);
 /*

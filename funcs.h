@@ -8,7 +8,7 @@ typedef struct mSplit{
 }mSplit_t;
 
 double **matrix_mult(double **G1, double **G2, int N);
-void split(mSplit_t *subMat, double** G, int N);
+void split(double **A11,double **A12,double **A21,double **A22,double **B11,double **B12,double **B21,double **B22,double **G1,double **G2,int N);
 double randfrom(double min, double max);
 void rand_init(int N, double **G,double min, double max);
 double** mat_add(double **G1, double **G2, int N);

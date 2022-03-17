@@ -26,7 +26,8 @@ double **matrix_mult(double **G1, double **G2, int N){
     return prod;
 }
 
-void split(mSplit_t *subMat, double** G, int N){
+
+void split(double **A11,double **A12,double **A21,double **A22,double **B11,double **B12,double **B21,double **B22,double **G1,double **G2,int N){
     /*
     In order to not have to create new submatrices I opted for a structure
     that stores the borders of each and every submatrix. This way we can operate
@@ -35,29 +36,20 @@ void split(mSplit_t *subMat, double** G, int N){
     //subMat->N=N;
     //subMat->mat=G;
     int i,j;
-    double ** nw = malloc(N/2*sizeof(double *));
-    double ** ne = malloc(N/2*sizeof(double *));
-    double ** sw = malloc(N/2*sizeof(double *));
-    double ** se = malloc(N/2*sizeof(double *));
-    for(i=0; i< N/2; i++){
-        nw[i] = malloc(N/2*sizeof(double));
-        ne[i] = malloc(N/2*sizeof(double));
-        sw[i] = malloc(N/2*sizeof(double));
-        se[i] = malloc(N/2*sizeof(double));
-    }
+    
 
     for(i=0;i<N/2;i++){
         for(j=0;j<N/2;j++){
-            nw[i][j]=G[i][j];
-            ne[i][j]=G[i][j+N/2];
-            sw[i][j]=G[i+N/2][j];
-            se[i][j]=G[i+N/2][j+N/2];
+            A11[i][j]=G1[i][j];
+            A12[i][j]=G1[i][j+N/2];
+            A21[i][j]=G1[i+N/2][j];
+            A22[i][j]=G1[i+N/2][j+N/2];
+            B11[i][j]=G2[i][j];
+            B12[i][j]=G2[i][j+N/2];
+            B21[i][j]=G2[i+N/2][j];
+            B22[i][j]=G2[i+N/2][j+N/2];
         }
     }
-    subMat->nw=nw;
-    subMat->ne=ne;   
-    subMat->sw=sw;
-    subMat->se=se;
 }
 double randfrom(double min, double max) 
 {
@@ -232,12 +224,27 @@ double **strassen(double** G1, double** G2, int N, int nThreads){
     }
     double **p1,**p2,**p3,**p4,**p5,**p6,**p7;
     double **c;
-    mSplit_t *s1;
-    mSplit_t *s2;
-    s1=(mSplit_t *)malloc(sizeof(mSplit_t));
-    s2=(mSplit_t *)malloc(sizeof(mSplit_t));
-    split(s1,G1,N);
-    split(s2,G2,N);
+    //double **A11,**A12,**A21,**A22,**B11,**B12,**B21,**B22;
+    double ** A11 = malloc(N/2*sizeof(double *));
+    double ** A12 = malloc(N/2*sizeof(double *));
+    double ** A21 = malloc(N/2*sizeof(double *));
+    double ** A22 = malloc(N/2*sizeof(double *));
+    double ** B11 = malloc(N/2*sizeof(double *));
+    double ** B12 = malloc(N/2*sizeof(double *));
+    double ** B21 = malloc(N/2*sizeof(double *));
+    double ** B22 = malloc(N/2*sizeof(double *));
+    for(int i=0; i< N/2; i++){
+        A11[i] = malloc(N/2*sizeof(double));
+        A12[i] = malloc(N/2*sizeof(double));
+        A21[i] = malloc(N/2*sizeof(double));
+        A22[i] = malloc(N/2*sizeof(double));
+        B11[i] = malloc(N/2*sizeof(double));
+        B12[i] = malloc(N/2*sizeof(double));
+        B21[i] = malloc(N/2*sizeof(double));
+        B22[i] = malloc(N/2*sizeof(double));
+    }
+    split(A11,A12,A21,A22,B11,B12,B21,B22,G1,G2,N);
+
     
     
     
@@ -263,40 +270,40 @@ double **strassen(double** G1, double** G2, int N, int nThreads){
         {
             #pragma omp task
             {
-                p1_2=mat_sub(s2->ne,s2->se,N_2);
-		        p1 = strassen(s1->nw,p1_2,N_2,nr_threads_send);//(a, f - h); x
+                p1_2=mat_sub(B12,B22,N_2);
+		        p1 = strassen(A11,p1_2,N_2,nr_threads_send);//(a, f - h); x
             }
             #pragma omp task
             {
-                p2_1=mat_add(s1->nw,s1->ne,N_2);
-                p2 = strassen(p2_1,s2->se,N_2,nr_threads_send);//(a + b, h); x
+                p2_1=mat_add(A11,A12,N_2);
+                p2 = strassen(p2_1,B22,N_2,nr_threads_send);//(a + b, h); x
             }
             #pragma omp task
             {
-                p3_1=mat_add(s1->sw,s1->se,N_2);
-                p3 = strassen(p3_1,s2->nw,N_2,nr_threads_send);//(c + d, e); x
+                p3_1=mat_add(A21,A22,N_2);
+                p3 = strassen(p3_1,B11,N_2,nr_threads_send);//(c + d, e); x
             }
             #pragma omp task
             {
-                p4_2=mat_sub(s2->sw,s2->nw,N_2);
-                p4 = strassen(s1->se,p4_2,N_2,nr_threads_send);//(d, g - e); x
+                p4_2=mat_sub(B21,B11,N_2);
+                p4 = strassen(A22,p4_2,N_2,nr_threads_send);//(d, g - e); x
             }
             #pragma omp task
             {
-                p5_1=mat_add(s1->nw,s1->se,N_2);
-                p5_2=mat_add(s2->nw,s2->se,N_2);
+                p5_1=mat_add(A11,A22,N_2);
+                p5_2=mat_add(B11,B22,N_2);
                 p5 = strassen(p5_1,p5_2,N_2,nr_threads_send);//(a + d, e + h); x x
             }
             #pragma omp task
             {
-                p6_1=mat_sub(s1->ne,s1->se,N_2);
-                p6_2=mat_add(s2->sw,s2->se,N_2);
+                p6_1=mat_sub(A12,A22,N_2);
+                p6_2=mat_add(B21,B22,N_2);
                 p6 = strassen(p6_1,p6_2,N_2,nr_threads_send);//(b - d, g + h); x x
             }
             #pragma omp task
             {
-                p7_1=mat_sub(s1->nw,s1->sw,N_2);
-                p7_2=mat_add(s2->nw,s2->ne,N_2);
+                p7_1=mat_sub(A11,A21,N_2);
+                p7_2=mat_add(B11,B12,N_2);
                 p7 = strassen(p7_1,p7_2,N_2,nr_threads_send);//(a - c, e + f); x x
             }
             
@@ -307,8 +314,14 @@ double **strassen(double** G1, double** G2, int N, int nThreads){
 
     
     free_sub_p(p1_2, p2_1, p3_1, p4_2, p5_1, p5_2, p6_1, p6_2, p7_1, p7_2,N_2);
-    free_s(s1,N);
-    free_s(s2,N);
+    free_mat(A11,N_2);
+    free_mat(A12,N_2);
+    free_mat(A21,N_2);
+    free_mat(A22,N_2);
+    free_mat(B11,N_2);
+    free_mat(B12,N_2);
+    free_mat(B21,N_2);
+    free_mat(B22,N_2);
     c=stackP(p1,p2,p3,p4,p5,p6,p7,N);
     free_p(p1,p2,p3,p4,p5,p6,p7,N_2);
     

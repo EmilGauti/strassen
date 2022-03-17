@@ -253,7 +253,7 @@ double **strassen(double** G1, double** G2, int N, int nThreads){
     
     
     int nr_threads_send=nThreads/7;
-    int N_2=N/2;
+    int N_2=N/2; 
     if(nThreads<=0){
         nThreads=1;
     }

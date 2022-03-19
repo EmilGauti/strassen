@@ -1,0 +1,7 @@
+Strassen: N: 128, Time: 0.002911
+Strassen: N: 256, Time: 0.017363
+Strassen: N: 512, Time: 0.069063
+Strassen: N: 1024, Time: 0.429119
+Strassen: N: 2048, Time: 3.000219
+Strassen: N: 4096, Time: 20.809328
+Strassen: N: 8192, Time: 152.433114

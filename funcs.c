@@ -223,7 +223,7 @@ double **strassen(double** G1, double** G2, int N){
         return sum;
     }
     */
-    if(N<=1){
+    if(N<=64){
         //N=64 is optimal
         //more testing required
         //printf("nThreads=%d\n",nThreads);

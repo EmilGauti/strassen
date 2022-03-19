@@ -1,4 +1,4 @@
-FLAGS = -Wall -Ofast 
+FLAGS = -Wall -O2
 OBJS = main.o funcs.o
 EXEC = matmul
 CFLAGS=-Wall

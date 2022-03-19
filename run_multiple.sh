@@ -1,10 +1,3 @@
-./matmul 1 1
-./matmul 2 1
-./matmul 4 1
-./matmul 8 1
-./matmul 16 1
-./matmul 32 1
-./matmul 64 1
 ./matmul 128 1
 ./matmul 256 1
 ./matmul 512 1
